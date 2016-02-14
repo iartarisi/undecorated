@@ -3,6 +3,8 @@ undecorated
 
 This library provides an easy way to strip a function of its decorators.
 
+Tested on python 2.6 up to 3.4.
+
 .. image:: https://travis-ci.org/mapleoin/undecorated.svg?branch=master
     :target: https://travis-ci.org/mapleoin/undecorated
 

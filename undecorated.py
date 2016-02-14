@@ -16,7 +16,7 @@
 """Return a function with any decorators removed """
 
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 def undecorated(f):

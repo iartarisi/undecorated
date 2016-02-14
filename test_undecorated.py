@@ -65,6 +65,17 @@ def test_thrice_decorated():
     assert decorated(0, 0) == ('original', 1, 'd', 2)
 
 
+def test_params_to_decorator_are_functions():
+    def foo():
+        pass
+
+    decorated = decorate_with_params(foo)(
+        decorate_with_params(foo, foo)(f))
+
+    assert undecorated(decorated) == f
+    assert decorated(0) == ('original', foo, foo, foo)
+
+
 def test_simple_method():
     class A(object):
         def foo(self, a, b):

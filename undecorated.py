@@ -24,6 +24,10 @@ def undecorated(f):
 
     if f.func_closure:
         for cell in f.func_closure:
+            # avoid infinite recursion
+            if cell.cell_contents is f:
+                continue
+
             undecd = undecorated(cell.cell_contents)
             if undecd:
                 return undecd

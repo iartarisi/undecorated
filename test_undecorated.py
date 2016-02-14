@@ -76,6 +76,21 @@ def test_params_to_decorator_are_functions():
     assert decorated(0) == ('original', foo, foo, foo)
 
 
+def test_infinite_recursion():
+    def recursive_decorator(f):
+        @wraps(f)
+        def decorator(*args, **kwargs):
+            decorator.foo()
+            return f(*args, **kwargs)
+
+        decorator.foo = lambda: None
+
+        return decorator
+
+    decorated = recursive_decorator(f)
+    assert undecorated(decorated) == f
+
+
 def test_simple_method():
     class A(object):
         def foo(self, a, b):

@@ -21,12 +21,19 @@ __version__ = '0.0.1'
 
 def undecorated(f):
     try:
-        f.func_closure
+        # python2
+        closure = f.func_closure
+    except AttributeError:
+        pass
+
+    try:
+        # python3
+        closure = f.__closure__
     except AttributeError:
         return
 
-    if f.func_closure:
-        for cell in f.func_closure:
+    if closure:
+        for cell in closure:
             # avoid infinite recursion
             if cell.cell_contents is f:
                 continue

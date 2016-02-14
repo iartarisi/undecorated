@@ -3,6 +3,9 @@ undecorated
 
 This library provides an easy way to strip a function of its decorators.
 
+.. image:: https://travis-ci.org/mapleoin/undecorated.svg?branch=master
+    :target: https://travis-ci.org/mapleoin/undecorated
+
 
 Quickstart
 ``````````

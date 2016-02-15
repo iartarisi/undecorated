@@ -76,6 +76,18 @@ def test_params_to_decorator_are_functions():
     assert decorated(0) == ('original', foo, foo, foo)
 
 
+def test_decorator_without_wraps():
+    def lame_decorator(f):
+        def decorator(*args, **kwargs):
+            f(*args, **kwargs)
+        return decorator
+
+    decorated = lame_decorator(f)
+
+    assert undecorated(decorated) is f
+    assert undecorated(decorated)(None) == ('original', )
+
+
 def test_infinite_recursion():
     def recursive_decorator(f):
         @wraps(f)

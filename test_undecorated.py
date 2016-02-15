@@ -44,16 +44,18 @@ def f(a, b=2):
 def test_simple_undecorate():
     decorated = decorate(f)
 
+    assert decorated(None) == ('original', 'd')
+    assert decorated(None, 3) == ('original', 'd')
     assert undecorated(decorated) == f
-    assert decorated(1) == ('original', 'd')
-    assert decorated(1, 3) == ('original', 'd')
+    assert undecorated(decorated)(None) == ('original', )
 
 
 def test_with_params():
     decorated = decorate_with_params('a', kwarg1='b')(f)
 
-    assert undecorated(decorated) == f
     assert decorated(1, 2) == ('original', 'a', ('kwarg1', 'b'))
+    assert undecorated(decorated) == f
+    assert undecorated(decorated)(None) == ('original', )
 
 
 def test_thrice_decorated():
@@ -61,8 +63,9 @@ def test_thrice_decorated():
         decorate(
             decorate_with_params(1)(f)))
 
-    assert undecorated(decorated) == f
     assert decorated(0, 0) == ('original', 1, 'd', 2)
+    assert undecorated(decorated) == f
+    assert undecorated(decorated)(None) == ('original', )
 
 
 def test_params_to_decorator_are_functions():
@@ -72,8 +75,9 @@ def test_params_to_decorator_are_functions():
     decorated = decorate_with_params(foo)(
         decorate_with_params(foo, foo)(f))
 
-    assert undecorated(decorated) == f
     assert decorated(0) == ('original', foo, foo, foo)
+    assert undecorated(decorated) == f
+    assert undecorated(decorated)(None) == ('original', )
 
 
 def test_decorator_without_wraps():
@@ -100,7 +104,10 @@ def test_infinite_recursion():
         return decorator
 
     decorated = recursive_decorator(f)
+
+    assert decorated(None) == ('original', )
     assert undecorated(decorated) == f
+    assert undecorated(decorated)(None) == ('original', )
 
 
 def test_simple_method():
@@ -110,5 +117,6 @@ def test_simple_method():
 
     decorated = decorate_with_params('dp')(decorate(A.foo))
 
-    assert undecorated(decorated) == A.foo
     assert decorated(A(), 1, 2) == (1, 2, 'd', 'dp')
+    assert undecorated(decorated) == A.foo
+    assert undecorated(decorated)(A(), 1, 2) == (1, 2)

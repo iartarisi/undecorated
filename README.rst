@@ -30,6 +30,9 @@ Try it on one of your functions:
 `undecorated` has returned your original function clean of any decorators.
 
 
+It also works with class decorators!
+
+
 Example
 ```````
 

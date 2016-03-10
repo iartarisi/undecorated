@@ -16,6 +16,8 @@
 
 from functools import wraps
 
+import pytest
+
 from undecorated import undecorated
 
 
@@ -127,3 +129,30 @@ def test_not_decorated():
         return a, b
 
     assert undecorated(f) is f
+
+
+def test_class_decorator():
+    def singleton(cls):
+        instances = {}
+
+        def get_instance():
+            if cls not in instances:
+                instances[cls] = cls()
+            else:
+                raise Exception
+
+        return get_instance
+
+    class A(object):
+        def foo(self, a, b):
+            return a, b
+
+    singleton_A = singleton(A)
+
+    singleton_A()
+    with pytest.raises(Exception):
+        singleton_A()
+
+    assert undecorated(singleton_A) is A
+    A()
+    A()

@@ -19,27 +19,32 @@
 __version__ = '0.1.1'
 
 
-def undecorated(f):
+def undecorated(o):
+    """Remove all decorators from a function, method or class"""
+    # class decorator
+    if type(o) is type:
+        return o
+
     try:
         # python2
-        closure = f.func_closure
+        closure = o.func_closure
     except AttributeError:
         pass
 
     try:
         # python3
-        closure = f.__closure__
+        closure = o.__closure__
     except AttributeError:
         return
 
     if closure:
         for cell in closure:
             # avoid infinite recursion
-            if cell.cell_contents is f:
+            if cell.cell_contents is o:
                 continue
 
             undecd = undecorated(cell.cell_contents)
             if undecd:
                 return undecd
     else:
-        return f
+        return o

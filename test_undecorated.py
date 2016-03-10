@@ -120,3 +120,10 @@ def test_simple_method():
     assert decorated(A(), 1, 2) == (1, 2, 'd', 'dp')
     assert undecorated(decorated) == A.foo
     assert undecorated(decorated)(A(), 1, 2) == (1, 2)
+
+
+def test_not_decorated():
+    def foo(self, a, b):
+        return a, b
+
+    assert undecorated(f) is f

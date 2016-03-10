@@ -132,27 +132,18 @@ def test_not_decorated():
 
 
 def test_class_decorator():
-    def singleton(cls):
-        instances = {}
-
-        def get_instance():
-            if cls not in instances:
-                instances[cls] = cls()
-            else:
-                raise Exception
-
-        return get_instance
+    def decorate(cls):
+        def dec():
+            ins = cls()
+            ins.decorated = True
+            return ins
+        return dec
 
     class A(object):
-        def foo(self, a, b):
-            return a, b
+        decorated = False
 
-    singleton_A = singleton(A)
+    decorated = decorate(A)
 
-    singleton_A()
-    with pytest.raises(Exception):
-        singleton_A()
-
-    assert undecorated(singleton_A) is A
-    A()
-    A()
+    assert decorated().decorated is True
+    assert undecorated(decorated) is A
+    assert undecorated(decorated)().decorated is False

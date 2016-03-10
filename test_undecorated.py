@@ -120,7 +120,7 @@ def test_simple_method():
     decorated = decorate_with_params('dp')(decorate(A.foo))
 
     assert decorated(A(), 1, 2) == (1, 2, 'd', 'dp')
-    assert undecorated(decorated) is A.foo
+    assert undecorated(decorated) == A.foo
     assert undecorated(decorated)(A(), 1, 2) == (1, 2)
 
 

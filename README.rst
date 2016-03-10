@@ -62,6 +62,12 @@ Example
     tree
 
 
+Project
+```````
+
+This project uses `Semantic Versioning <http://semver.org>`.
+
+
 License
 ```````
 

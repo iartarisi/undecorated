@@ -16,8 +16,6 @@
 
 from functools import wraps
 
-import pytest
-
 from undecorated import undecorated
 
 

@@ -145,3 +145,43 @@ def test_class_decorator():
     assert decorated().decorated is True
     assert undecorated(decorated) is A
     assert undecorated(decorated)().decorated is False
+
+
+def decorator_factory(*decorator_names):
+    """Create some simple decorators with the given names"""
+    decorator_template = """\
+def {decorator_name}(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        return f(*args, **kwargs)
+    return wrapper
+    """
+
+    decorators = []
+    for decorator_name in decorator_names:
+        exec decorator_template.format(
+            decorator_name=decorator_name)
+        decorators.append(locals()[decorator_name])
+
+    return decorators
+
+
+def test_keep_one():
+    red_bauble, yellow_bauble, green_bauble = decorator_factory(
+        'red_bauble', 'yellow_bauble', 'green_bauble')
+
+    decorated = red_bauble(yellow_bauble(green_bauble(f)))
+
+    for dec in [red_bauble, yellow_bauble, green_bauble]:
+        assert undecorated(decorated, keep=[dec]) == dec(f)
+
+
+def test_keep_two():
+    red_bauble, yellow_bauble, green_bauble = decorator_factory(
+        'red_bauble', 'yellow_bauble', 'green_bauble')
+    decorators = red_bauble, yellow_bauble, green_bauble
+
+    decorated = red_bauble(yellow_bauble(green_bauble(f)))
+
+    for dec in decorators:
+        assert undecorated(decorated, keep=[dec]) == dec(f)

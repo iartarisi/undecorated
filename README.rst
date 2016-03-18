@@ -32,6 +32,19 @@ Try it on one of your functions:
 
 It also works with class decorators!
 
+If you have a long list of decorators, you can specify which to keep (and throw away everything else):
+
+.. code:: python
+
+    undecorated(my_decorated_function, keep=['red_bauble', 'blue_bauble']
+
+
+Or which to throw away (and keep the rest):
+
+.. code:: python
+
+    undecorated(my_decorated_function, remove=['tinsel'])
+
 
 Example
 ```````

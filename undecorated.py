@@ -17,7 +17,7 @@
 __version__ = '0.2.0'
 
 
-def undecorated(o):
+def undecorated(o, keep=None):
     """Remove all decorators from a function, method or class"""
     # class decorator
     if type(o) is type:
@@ -45,4 +45,10 @@ def undecorated(o):
             if undecd:
                 return undecd
     else:
+        print 'once'
         return o
+
+
+def _redecorate(o, decorators):
+    """Decorate object o with the list of given decorators order"""
+    return o

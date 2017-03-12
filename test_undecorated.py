@@ -212,3 +212,16 @@ def test_class_decorator():
     # then the returned class will be and behave like the original class A
     assert undecorated(decorated) is A
     assert undecorated(decorated)().decorated is False
+
+
+def test_builtin():
+    # given a builtin decorated with a sample decorator
+    decorated = decorate(tuple)
+
+    # which changes its return value by appending a marker
+    assert decorated() == tuple() + DECORATE_MARKER
+
+    # when calling undecorated on the decorated builtin
+    # then the returned function will be and behave like the original builtin
+    assert undecorated(decorated) is tuple
+    assert undecorated(decorated)() == tuple()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 Ionuț Arțăriși <ionut@artarisi.eu>
+# Copyright 2016-2017 Ionuț Arțăriși <ionut@artarisi.eu>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,12 +19,17 @@ from functools import wraps
 from undecorated import undecorated
 
 
+# this marker will be appended to the return value of functions using
+# the `decorate` decorator
+DECORATE_MARKER = (object(), )
+
+
 def decorate(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         # 'd' is a marker to make it easy to assert that the wrapper was
         # run
-        return f(*args, **kwargs) + ('d', )
+        return f(*args, **kwargs) + DECORATE_MARKER
     return wrapper
 
 
@@ -42,54 +47,99 @@ def f(a, b=2):
 
 
 def test_simple_undecorate():
+    # given our original function f, decorated with a simple decorator
     decorated = decorate(f)
 
-    assert decorated(None) == ('original', 'd')
-    assert decorated(None, 3) == ('original', 'd')
+    # which appends a marker to the return value of our original function
+    assert decorated(None) == f(None) + DECORATE_MARKER
+    assert decorated(None, 3) == f(None, 3) + DECORATE_MARKER
+
+    # when calling udnecorated on the decorated function
+    # then the returned function will be and behave like the original
+    # function f
     assert undecorated(decorated) is f
-    assert undecorated(decorated)(None) == ('original', )
+    assert undecorated(decorated)(None) == f(None)
 
 
 def test_with_params():
-    decorated = decorate_with_params('a', kwarg1='b')(f)
+    # given a sample function `f` decorated with some arbitrary params
+    test_args = 'a'
+    test_kwargs = {'kwarg1': 'b'}
+    decorated = decorate_with_params(*test_args, **test_kwargs)(f)
 
-    assert decorated(1, 2) == ('original', 'a', ('kwarg1', 'b'))
+    # which will change its return value (appending our arbitrary params)
+    assert (
+        decorated(1, 2) ==
+        f(1, 2) + (test_args, ) + tuple(test_kwargs.items()))
+
+    # when we undecorate the function
+
+    # then the returned function will be and behave like the original
+    # function f
     assert undecorated(decorated) is f
-    assert undecorated(decorated)(None) == ('original', )
+    assert undecorated(decorated)(None) == f(None)
 
 
 def test_thrice_decorated():
-    decorated = decorate_with_params(2)(
-        decorate(
-            decorate_with_params(1)(f)))
+    # given a sample function f, decorated thrice:
+    # with an decorator which takes 1 as a parameter
+    decorated = decorate_with_params(1)(f)
+    # with our normal test decorator
+    decorated = decorate(decorated)
+    # and with another decorator which takes 1 as a parameter
+    decorated = decorate_with_params(2)(decorated)
 
-    assert decorated(0, 0) == ('original', 1, 'd', 2)
+    # this will append one element to the return value of f for each of
+    # the decorators called
+    assert decorated(0, 0) == f(0, 0) + (1, ) + DECORATE_MARKER + (2, )
+
+    # when we undecorate the function
+
+    # then the returned function will be and behave like the original
+    # function f
     assert undecorated(decorated) is f
-    assert undecorated(decorated)(None) == ('original', )
+    assert undecorated(decorated)(None) == f(None)
 
 
 def test_params_to_decorator_are_functions():
+    # given a sample function f, decorated with a decorator which
+    # accepts functions as parameter
     def foo():
         pass
 
-    decorated = decorate_with_params(foo)(
-        decorate_with_params(foo, foo)(f))
+    decorate_params = (foo, foo)
+    decorated = decorate_with_params(*decorate_params)(f)
 
-    assert decorated(0) == ('original', foo, foo, foo)
+    # and which causes the decorated function to append the parameters
+    # to the decorator to the return value of the decorated function
+    assert decorated(0) == f(0) + (foo, foo)
+
+    # when we undecorate the function
+    # then the returned function will be and behave like the original
+    # function f
     assert undecorated(decorated) is f
-    assert undecorated(decorated)(None) == ('original', )
+    assert undecorated(decorated)(None) == f(None)
 
 
 def test_decorator_without_wraps():
+    # given a sample function f, decorated with a decorator which does
+    # not use the functools.wraps function
     def lame_decorator(f):
         def decorator(*args, **kwargs):
-            f(*args, **kwargs)
+            return f(*args, **kwargs) + DECORATE_MARKER
         return decorator
 
     decorated = lame_decorator(f)
 
+    # and which appends a marker to the return value of its decorated
+    # function
+    assert decorated(0) == f(0) + DECORATE_MARKER
+
+    # when we undecorate the function
+    # then the returned function will be and behave like the original
+    # function f
     assert undecorated(decorated) is f
-    assert undecorated(decorated)(None) == ('original', )
+    assert undecorated(decorated)(None) == f(None)
 
 
 def test_infinite_recursion():
@@ -111,25 +161,41 @@ def test_infinite_recursion():
 
 
 def test_simple_method():
+    # given a sample class method A.foo
     class A(object):
         def foo(self, a, b):
             return a, b
 
-    decorated = decorate_with_params('dp')(decorate(A.foo))
+    # which is decorated with our test decorator
+    decorated = decorate(A.foo)
 
-    assert decorated(A(), 1, 2) == (1, 2, 'd', 'dp')
+    # and which appends the parameters to the return value of its
+    # decorated function
+    assert decorated(A(), 1, 2) == A().foo(1, 2) + DECORATE_MARKER
+
+    # when we undecorate the method
+    # then the returned method will be the same and behave like the
+    # original method
     assert undecorated(decorated) == A.foo
     assert undecorated(decorated)(A(), 1, 2) == (1, 2)
 
 
 def test_not_decorated():
+    # given a function which is not decorated
     def foo(self, a, b):
         return a, b
 
-    assert undecorated(f) is f
+    # when calling undecorated on it
+    # then the result will be the original function f
+    assert undecorated(foo) is foo
 
 
 def test_class_decorator():
+    # given a sample class
+    class A(object):
+        decorated = False
+
+    # and a class decorator
     def decorate(cls):
         def dec():
             ins = cls()
@@ -137,11 +203,12 @@ def test_class_decorator():
             return ins
         return dec
 
-    class A(object):
-        decorated = False
-
     decorated = decorate(A)
 
+    # which changes the class's `decorated` class variable to True
     assert decorated().decorated is True
+
+    # when calling undecorated on the decorated class
+    # then the returned class will be and behave like the original class A
     assert undecorated(decorated) is A
     assert undecorated(decorated)().decorated is False

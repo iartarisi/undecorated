@@ -14,7 +14,7 @@ setup(
     version=__version__,
     author='Ionuț Arțăriși',
     author_email='ionut@artarisi.eu',
-    description='Undecorate python functions or methods',
+    description='Undecorate python functions, methods or classes',
     long_description=long_description,
     url='https://github.com/mapleoin/undecorated',
     py_modules=['undecorated'],

@@ -16,6 +16,8 @@
 
 from functools import wraps
 
+import pytest
+
 from undecorated import undecorated
 
 
@@ -250,3 +252,68 @@ def test_builtin():
     # then the returned function will be and behave like the original builtin
     assert undecorated(decorated) is tuple
     assert undecorated(decorated)() == tuple()
+
+
+def test_closure():
+    # given a closure
+    outer_scope_var = 'outer_scope_var'
+
+    def closure():
+        return (outer_scope_var, )
+
+    # decorated with a sample decorator
+    decorated = decorate(closure)
+
+    # which changes its return value by appending a marker
+    assert decorated() == closure() + DECORATE_MARKER
+
+    # when calling undecorated on the decorated closure
+    # then the returned function will be and behave like the original closure
+    assert undecorated(decorated) is closure
+    assert undecorated(decorated)() == closure()
+
+
+@pytest.mark.xfail
+def test_func_closure(reason='favor no-wraps decorators; see undecorated.py'):
+    # given a closure over a function
+    def outer_scope_func():
+        pass
+
+    def closure():
+        return (outer_scope_func, )
+
+    # decorated with a sample decorator
+    decorated = decorate(closure)
+
+    # which changes its return value by appending a marker
+    assert decorated() == closure() + DECORATE_MARKER
+
+    # when calling undecorated on the decorated closure
+    # then the returned function will be and behave like the original closure
+    assert undecorated(closure) is closure
+    assert undecorated(closure)() == closure()
+
+
+@pytest.mark.xfail(reason='favor no-wraps decorators; see undecorated.py')
+def test_method_closure():
+    def outer_scope_func():
+        pass
+
+    # given a sample class method A.foo which is a closure
+    class A(object):
+        def foo(self, a, b):
+            outer_scope_func()
+            return a, b
+
+    # which is decorated with our test decorator
+    decorated = decorate(A.foo)
+
+    # and which appends the parameters to the return value of its
+    # decorated function
+    assert decorated(A(), 1, 2) == A().foo(1, 2) + DECORATE_MARKER
+
+    # when we undecorate the method
+    # then the returned method will be the same and behave like the
+    # original method
+    assert undecorated(decorated) == A.foo
+    assert undecorated(decorated)(A(), 1, 2) == (1, 2)

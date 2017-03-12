@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright 2016 Ionuț Arțăriși <ionut@artarisi.eu>
+# Copyright 2016-2017 Ionuț Arțăriși <ionut@artarisi.eu>
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from inspect import isfunction, ismethod, isclass
 
 __version__ = '0.2.0'
 
@@ -41,8 +43,24 @@ def undecorated(o):
             if cell.cell_contents is o:
                 continue
 
-            undecd = undecorated(cell.cell_contents)
-            if undecd:
-                return undecd
+            # check if the contents looks like a decorator; in that case
+            # we need to go one level down into the dream, otherwise it
+            # might just be a different closed-over variable, which we
+            # can ignore.
+
+            # Note: this favors supporting decorators defined without
+            # @wraps to the detriment of function/method/class closures
+            if looks_like_a_decorator(cell.cell_contents):
+                undecd = undecorated(cell.cell_contents)
+                if undecd:
+                    return undecd
+        else:
+            return o
     else:
         return o
+
+
+def looks_like_a_decorator(a):
+    return (
+        isfunction(a) or ismethod(a) or isclass(a)
+    )

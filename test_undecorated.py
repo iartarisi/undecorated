@@ -190,6 +190,30 @@ def test_not_decorated():
     assert undecorated(foo) is foo
 
 
+def test_class_decorator_without_wraps():
+    # given a sample class
+    class A(object):
+        decorated = False
+
+    # and a class decorator which does not use functools.wraps
+    def decorate(cls):
+        def dec():
+            ins = cls()
+            ins.decorated = True
+            return ins
+        return dec
+
+    decorated = decorate(A)
+
+    # which changes the class's `decorated` class variable to True
+    assert decorated().decorated is True
+
+    # when calling undecorated on the decorated class
+    # then the returned class will be and behave like the original class A
+    assert undecorated(decorated) is A
+    assert undecorated(decorated)().decorated is False
+
+
 def test_class_decorator():
     # given a sample class
     class A(object):
@@ -197,6 +221,7 @@ def test_class_decorator():
 
     # and a class decorator
     def decorate(cls):
+        @wraps(cls)
         def dec():
             ins = cls()
             ins.decorated = True

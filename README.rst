@@ -6,8 +6,8 @@ This library provides an easy way to strip a function of its decorators.
 Tested on python 2.6 up to 3.6: |travis|
 
 
-.. |travis| image:: https://travis-ci.org/mapleoin/undecorated.svg?branch=master
-    :target: https://travis-ci.org/mapleoin/undecorated
+.. |travis| image:: https://travis-ci.org/iartarisi/undecorated.svg?branch=master
+    :target: https://travis-ci.org/iartarisi/undecorated
 
 
 Quickstart

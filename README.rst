@@ -3,7 +3,7 @@ undecorated
 
 This library provides an easy way to strip a function of its decorators.
 
-Tested on python 2.6 up to 3.6: |travis|
+Tested on python 2.7 up to 3.8: |travis|
 
 
 .. |travis| image:: https://travis-ci.org/iartarisi/undecorated.svg?branch=master
